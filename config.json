@@ -1,0 +1,10 @@
+{"fp": "/Users/barnesd8/Documents/git/machine_learning_persistence/",
+"mpeg7data": "mpeg7/data/",
+"mpeg7pers": "mpeg7/persistence/",
+"mpeg7contours": "mpeg7/contours/",
+"proteindata":"protein/data/",
+"proteinpers":"protein/persistence/",
+"ham10000data":"ham10000/data/",
+"ham10000pers":"ham10000/persistence/",
+"ham10000data_test":"ham10000/data_test/",
+"ham10000pers_test":"ham10000/persistence_test/"}
