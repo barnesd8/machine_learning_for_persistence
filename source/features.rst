@@ -1,3 +1,5 @@
+Features
+*******************
 
-.. automodule:: mlforpers.persistence_methods.persistence_methods
+.. automodule:: mlforpers.persistence_methods
     :members:

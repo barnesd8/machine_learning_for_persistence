@@ -1,0 +1,5 @@
+HAM10000
+*******************
+
+.. automodule:: datasets.ham10000
+    :members:
