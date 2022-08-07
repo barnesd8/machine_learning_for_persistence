@@ -1,10 +1,7 @@
 Features
 *******************
 
-.. automodule:: ml4pers.features.kernel_features
-    :members:
-
-.. automodule:: ml4pers.features.tent_features
+.. automodule:: ml4pers.features.create_features
     :members:
 
 Below is an example of creating features from persistence diagrams using the kernel method::

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ml4pers.features.create_features &mdash; Machine Learning Library for TDA .1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Machine Learning Library for TDA
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../datasets.html">1. Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pd.html">2. Computing Persistence Diagrams</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../features.html">3. Featurization</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Machine Learning Library for TDA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>ml4pers.features.create_features</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ml4pers.features.create_features</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This set of functions computes features for use in machine learning models from persistence diagrams.  It returns</span>
+<span class="sd">a training and testing set.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="kernel_features"><a class="viewcode-back" href="../../../features.html#ml4pers.features.create_features.kernel_features">[docs]</a><span class="k">def</span> <span class="nf">kernel_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="o">.</span><span class="mi">3</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This function computes a training and testing set of features based on the multi-scale kernel method when given a training and testing set of persistence diagrams</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">       train (array):  training set</span>
+<span class="sd">       test (array):  testing set</span>
+<span class="sd">       s (double):  parameter for kernel, default is .3.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       (array): X_train_features, features from the training set</span>
+<span class="sd">       (array): X_test_features, features from the testing set</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="kn">from</span> <span class="nn">persim</span> <span class="kn">import</span> <span class="n">heat</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">time</span>
+    
+    <span class="n">n_train</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
+    <span class="n">n_test</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+    <span class="n">X_train_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_train</span><span class="p">,</span> <span class="n">n_train</span><span class="p">))</span>
+    <span class="n">X_test_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_test</span><span class="p">,</span> <span class="n">n_train</span><span class="p">))</span>
+    
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n_train</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;train: &quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+            <span class="n">dgm0</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">dgm1</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">hk</span> <span class="o">=</span> <span class="n">heat</span><span class="p">(</span><span class="n">dgm0</span><span class="p">,</span> <span class="n">dgm1</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">s</span><span class="p">)</span> 
+            <span class="n">X_train_features</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">hk</span>
+            <span class="n">X_train_features</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">hk</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n_test</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;test: &quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+            <span class="n">dgm0</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">dgm1</span> <span class="o">=</span> <span class="n">test</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">hk</span> <span class="o">=</span> <span class="n">heat</span><span class="p">(</span><span class="n">dgm0</span><span class="p">,</span> <span class="n">dgm1</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">s</span><span class="p">)</span>        
+            <span class="n">X_test_features</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">hk</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X_train_features</span><span class="p">,</span> <span class="n">X_test_features</span></div>
+
+<div class="viewcode-block" id="tent_features"><a class="viewcode-back" href="../../../features.html#ml4pers.features.create_features.tent_features">[docs]</a><span class="k">def</span> <span class="nf">tent_features</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">padding</span><span class="o">=.</span><span class="mi">05</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This function computes a training and testing set of features based on tent functions</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">       train (array):  training set</span>
+<span class="sd">       test (array):  testing set</span>
+<span class="sd">       d (double):  parameter, default is 5.</span>
+<span class="sd">       padding (double): parameter, default is .05.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       (array): X_train_features, features from the training set</span>
+<span class="sd">       (array): X_test_features, features from the testing set</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">ATS</span>
+    <span class="kn">import</span> <span class="nn">time</span>
+
+    <span class="n">centers</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">ATS</span><span class="o">.</span><span class="n">box_centers</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span> 
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="n">X_train_features</span> <span class="o">=</span> <span class="n">ATS</span><span class="o">.</span><span class="n">get_all_features_boxes</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+
+    <span class="n">X_test_features</span> <span class="o">=</span> <span class="n">ATS</span><span class="o">.</span><span class="n">get_all_features_boxes</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Computing features took (seconds):</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">X_train_features</span><span class="p">,</span> <span class="n">X_test_features</span></div>
+
+<div class="viewcode-block" id="adaptive_features"><a class="viewcode-back" href="../../../features.html#ml4pers.features.create_features.adaptive_features">[docs]</a><span class="k">def</span> <span class="nf">adaptive_features</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">25</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This function computes a training and testing set of features</span>
+<span class="sd">    from adaptive template functions when given a training and testing set of persistence diagrams</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">       train (array):  training set</span>
+<span class="sd">       test (array):  testing set</span>
+<span class="sd">       d (double):  parameter, default is 25.</span>
+<span class="sd">    </span>
+<span class="sd">    Kwargs:</span>
+<span class="sd">       model (string): choice of adaptive template function from the following:</span>
+<span class="sd">       [&#39;gmm&#39;, &#39;hdb&#39;, &#39;cder&#39;]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       (array): X_train_features, features from the training set</span>
+<span class="sd">       (array): X_test_features, features from the testing set</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">ATS</span>
+    <span class="kn">import</span> <span class="nn">time</span>
+    <span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">mixture</span>
+    <span class="kn">import</span> <span class="nn">multidim</span>
+    <span class="kn">from</span> <span class="nn">multidim.covertree</span> <span class="kn">import</span> <span class="n">CoverTree</span>
+    <span class="kn">from</span> <span class="nn">multidim.models</span> <span class="kn">import</span> <span class="n">CDER</span>
+    <span class="kn">import</span> <span class="nn">hdbscan</span>
+
+    <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;gmm&quot;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Begin GMM...&#39;</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">X_train_temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+        <span class="n">gmm_f_train</span><span class="o">=</span><span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)):</span>
+            <span class="n">gmm_f_train</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_train</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">i</span><span class="p">])))</span>
+        <span class="n">gmm_f_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">gmm_f_train</span><span class="p">)</span>
+
+        <span class="n">gmm</span> <span class="o">=</span> <span class="n">mixture</span><span class="o">.</span><span class="n">BayesianGaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">d</span><span class="p">,</span> <span class="n">covariance_type</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mf">10e4</span><span class="p">))</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_temp</span><span class="p">,</span> <span class="n">gmm_f_train</span><span class="p">)</span>
+
+        <span class="n">ellipses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gmm</span><span class="o">.</span><span class="n">means_</span><span class="p">)):</span>
+            <span class="n">L</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">gmm</span><span class="o">.</span><span class="n">covariances_</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mean&#39;</span><span class="p">:</span><span class="n">gmm</span><span class="o">.</span><span class="n">means_</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;std&#39;</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">L</span><span class="p">),</span> <span class="s1">&#39;rotation&#39;</span><span class="p">:</span><span class="n">v</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="s1">&#39;radius&#39;</span><span class="p">:</span><span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">L</span><span class="p">)),</span> <span class="s1">&#39;entropy&#39;</span><span class="p">:</span><span class="n">gmm</span><span class="o">.</span><span class="n">weights_</span><span class="p">[</span><span class="n">i</span><span class="p">]}</span>
+            <span class="n">temp</span><span class="p">[</span><span class="s1">&#39;std&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">temp</span><span class="p">[</span><span class="s1">&#39;std&#39;</span><span class="p">]</span>
+            <span class="n">ellipses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+
+        <span class="n">X_train_features</span> <span class="o">=</span> <span class="n">ATS</span><span class="o">.</span><span class="n">get_all_features</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">ellipses</span><span class="p">,</span> <span class="n">ATS</span><span class="o">.</span><span class="n">f_ellipse</span><span class="p">)</span>
+
+        <span class="n">X_test_features</span> <span class="o">=</span> <span class="n">ATS</span><span class="o">.</span><span class="n">get_all_features</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">ellipses</span><span class="p">,</span> <span class="n">ATS</span><span class="o">.</span><span class="n">f_ellipse</span><span class="p">)</span>
+
+        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Computing gmm features took (seconds):</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">))</span>
+        
+    <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;hdb&quot;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Begin HDBSCAN...&#39;</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">X_train_temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">hdbscan</span><span class="o">.</span><span class="n">HDBSCAN</span><span class="p">()</span>
+
+        <span class="n">clusterer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_temp</span><span class="p">)</span>
+
+        <span class="n">num_clusters</span> <span class="o">=</span> <span class="n">clusterer</span><span class="o">.</span><span class="n">labels_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="n">ellipses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_clusters</span><span class="p">):</span>
+            <span class="n">cluster_i</span> <span class="o">=</span> <span class="n">X_train_temp</span><span class="p">[</span><span class="n">clusterer</span><span class="o">.</span><span class="n">labels_</span> <span class="o">==</span> <span class="n">i</span><span class="p">]</span>
+
+            <span class="n">en</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">clusterer</span><span class="o">.</span><span class="n">probabilities_</span><span class="p">[</span><span class="n">clusterer</span><span class="o">.</span><span class="n">labels_</span> <span class="o">==</span> <span class="n">i</span><span class="p">])</span>
+
+            <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cluster_i</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">cov_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">cluster_i</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
+
+            <span class="n">L</span><span class="p">,</span><span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">cov_matrix</span><span class="p">)</span>
+
+            <span class="n">temp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mean&#39;</span><span class="p">:</span><span class="n">mean</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">L</span><span class="p">),</span> <span class="s1">&#39;rotation&#39;</span><span class="p">:</span><span class="n">v</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="s1">&#39;radius&#39;</span><span class="p">:</span><span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">L</span><span class="p">)),</span> <span class="s1">&#39;entropy&#39;</span><span class="p">:</span><span class="n">en</span><span class="p">}</span>
+            <span class="n">temp</span><span class="p">[</span><span class="s1">&#39;std&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">temp</span><span class="p">[</span><span class="s1">&#39;std&#39;</span><span class="p">]</span>
+            <span class="n">ellipses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+
+        <span class="n">X_train_features</span> <span class="o">=</span> <span class="n">ATS</span><span class="o">.</span><span class="n">get_all_features</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">ellipses</span><span class="p">,</span> <span class="n">ATS</span><span class="o">.</span><span class="n">f_ellipse</span><span class="p">)</span>
+
+        <span class="n">X_test_features</span> <span class="o">=</span> <span class="n">ATS</span><span class="o">.</span><span class="n">get_all_features</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">ellipses</span><span class="p">,</span> <span class="n">ATS</span><span class="o">.</span><span class="n">f_ellipse</span><span class="p">)</span>
+
+        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Computing hdbscan features took (seconds):</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">))</span>
+        
+    <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;cder&quot;</span><span class="p">:</span>
+
+        <span class="n">y_train_cder</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Begin CDER...&#39;</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="n">pc_train</span> <span class="o">=</span> <span class="n">multidim</span><span class="o">.</span><span class="n">PointCloud</span><span class="o">.</span><span class="n">from_multisample_multilabel</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train_cder</span><span class="p">)</span>
+        <span class="n">ct_train</span> <span class="o">=</span> <span class="n">CoverTree</span><span class="p">(</span><span class="n">pc_train</span><span class="p">)</span>
+
+        <span class="n">cder</span> <span class="o">=</span> <span class="n">CDER</span><span class="p">(</span><span class="n">parsimonious</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">cder</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">ct_train</span><span class="p">)</span>
+
+        <span class="n">cder_result</span> <span class="o">=</span> <span class="n">cder</span><span class="o">.</span><span class="n">gaussians</span>
+
+        <span class="n">ellipses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cder_result</span><span class="p">:</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span><span class="n">c</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">,</span> <span class="s1">&#39;rotation&#39;</span><span class="p">,</span> <span class="s1">&#39;radius&#39;</span><span class="p">,</span> <span class="s1">&#39;entropy&#39;</span><span class="p">]}</span>
+            <span class="n">temp</span><span class="p">[</span><span class="s1">&#39;std&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">temp</span><span class="p">[</span><span class="s1">&#39;std&#39;</span><span class="p">]</span>
+            <span class="n">ellipses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+
+        <span class="n">X_train_features</span> <span class="o">=</span> <span class="n">ATS</span><span class="o">.</span><span class="n">get_all_features</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">ellipses</span><span class="p">,</span> <span class="n">ATS</span><span class="o">.</span><span class="n">f_ellipse</span><span class="p">)</span>
+
+        <span class="n">X_test_features</span> <span class="o">=</span> <span class="n">ATS</span><span class="o">.</span><span class="n">get_all_features</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">ellipses</span><span class="p">,</span> <span class="n">ATS</span><span class="o">.</span><span class="n">f_ellipse</span><span class="p">)</span>
+
+        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Computing features from H_1 took (seconds):</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">))</span>
+        
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not a valid model type&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X_train_features</span><span class="p">,</span> <span class="n">X_test_features</span></div>
+
+<div class="viewcode-block" id="carlsson_coordinates"><a class="viewcode-back" href="../../../features.html#ml4pers.features.create_features.carlsson_coordinates">[docs]</a><span class="k">def</span> <span class="nf">carlsson_coordinates</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This function computes a training and testing set of features</span>
+<span class="sd">    of Carlsson Coordinates when given a training and testing set of persistence diagrams</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       (array): X_train_features, features from the training set</span>
+<span class="sd">       (array): X_test_features, features from the testing set</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">time</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+    <span class="n">X_train_features_cc1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">X_train_features_cc2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">X_train_features_cc3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">X_train_features_cc4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">ymax</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">i</span><span class="p">][:,</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">ymax</span>
+        <span class="k">if</span> <span class="n">ymax</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">:</span>
+            <span class="n">ymax</span> <span class="o">=</span> <span class="n">b</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ymax</span> <span class="o">=</span> <span class="n">ymax</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ymax</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">[</span><span class="n">i</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">[</span><span class="n">i</span><span class="p">][:,</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">X_train_features_cc1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">x</span><span class="p">))</span>
+            <span class="n">X_train_features_cc2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="n">ymax</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">x</span><span class="p">))</span>
+            <span class="n">X_train_features_cc3</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span>
+            <span class="n">X_train_features_cc4</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="n">ymax</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X_train_features_cc1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">X_train_features_cc2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">X_train_features_cc3</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">X_train_features_cc4</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+    <span class="n">X_test_features_cc1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">X_test_features_cc2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">X_test_features_cc3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">X_test_features_cc4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">ymax</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">X_test</span><span class="p">[</span><span class="n">i</span><span class="p">][:,</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">ymax</span>
+        <span class="k">if</span> <span class="n">ymax</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">:</span>
+            <span class="n">ymax</span> <span class="o">=</span> <span class="n">b</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ymax</span> <span class="o">=</span> <span class="n">ymax</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">X_test</span><span class="p">[</span><span class="n">i</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">X_test</span><span class="p">[</span><span class="n">i</span><span class="p">][:,</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">X_test_features_cc1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">x</span><span class="p">))</span>
+            <span class="n">X_test_features_cc2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="n">ymax</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">x</span><span class="p">))</span>
+            <span class="n">X_test_features_cc3</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span>
+            <span class="n">X_test_features_cc4</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="n">ymax</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X_test_features_cc1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">X_test_features_cc2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">X_test_features_cc3</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">X_test_features_cc4</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Total Time (Carlsson Coordinates): &quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X_train_features_cc1</span><span class="p">,</span> <span class="n">X_train_features_cc2</span><span class="p">,</span> <span class="n">X_train_features_cc3</span><span class="p">,</span> <span class="n">X_train_features_cc4</span><span class="p">,</span> <span class="n">X_test_features_cc1</span><span class="p">,</span> <span class="n">X_test_features_cc2</span><span class="p">,</span> <span class="n">X_test_features_cc3</span><span class="p">,</span> <span class="n">X_test_features_cc4</span></div>
+
+<div class="viewcode-block" id="landscape_features"><a class="viewcode-back" href="../../../features.html#ml4pers.features.create_features.landscape_features">[docs]</a><span class="k">def</span> <span class="nf">landscape_features</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">num_landscapes</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This function computes a training and testing set of features</span>
+<span class="sd">    from adaptive template functions when given a training and testing set of persistence diagrams</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">       train (array):  training set</span>
+<span class="sd">       test (array):  testing set</span>
+<span class="sd">       num_landscapes (double):  the number of landscapes, default is 5</span>
+<span class="sd">       resolution (int): resolution, default is 100</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       (array): X_train_features, features from the training set</span>
+<span class="sd">       (array): X_test_features, features from the testing set</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">time</span>
+    <span class="kn">from</span> <span class="nn">gudhi.representations.vector_methods</span> <span class="kn">import</span> <span class="n">Landscape</span>
+    
+    <span class="n">landscapes</span> <span class="o">=</span> <span class="n">Landscape</span><span class="p">(</span><span class="n">num_landscapes</span><span class="p">,</span> <span class="n">resolution</span><span class="p">)</span>
+    <span class="n">lr</span> <span class="o">=</span> <span class="n">landscapes</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+    <span class="n">X_train_features</span> <span class="o">=</span> <span class="n">lr</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+    <span class="n">X_test_features</span> <span class="o">=</span> <span class="n">lr</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Total Time (Landscape Features): &quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X_train_features</span><span class="p">,</span> <span class="n">X_test_features</span></div>
+
+<div class="viewcode-block" id="persistence_image_features"><a class="viewcode-back" href="../../../features.html#ml4pers.features.create_features.persistence_image_features">[docs]</a><span class="k">def</span> <span class="nf">persistence_image_features</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">pixels</span><span class="o">=</span><span class="p">[</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">],</span> <span class="n">spread</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This function computes a training and testing set of features</span>
+<span class="sd">    from persistence images when given a training and testing set of persistence diagrams</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">       train (array):  training set</span>
+<span class="sd">       test (array):  testing set</span>
+<span class="sd">       pixels ([int, int]): pixel value, default [20,20]</span>
+<span class="sd">       spread (int): default 1</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">       (array): X_train_features, features from the training set</span>
+<span class="sd">       (array): X_test_features, features from the testing set</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">time</span>
+    <span class="kn">from</span> <span class="nn">persim</span> <span class="kn">import</span> <span class="n">PersImage</span>
+
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">pim</span> <span class="o">=</span> <span class="n">PersImage</span><span class="p">(</span><span class="n">pixels</span><span class="o">=</span><span class="n">pixels</span><span class="p">,</span> <span class="n">spread</span><span class="o">=</span><span class="n">spread</span><span class="p">)</span>
+    <span class="n">imgs_train</span> <span class="o">=</span> <span class="n">pim</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+    <span class="n">X_train_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">img</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">imgs_train</span><span class="p">])</span>
+    <span class="n">pim</span> <span class="o">=</span> <span class="n">PersImage</span><span class="p">(</span><span class="n">pixels</span><span class="o">=</span><span class="n">pixels</span><span class="p">,</span> <span class="n">spread</span><span class="o">=</span><span class="n">spread</span><span class="p">)</span>
+    <span class="n">imgs_test</span> <span class="o">=</span> <span class="n">pim</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+    <span class="n">X_test_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">img</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">imgs_test</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Total Time (Persistence Images): &quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X_train_features</span><span class="p">,</span> <span class="n">X_test_features</span></div>
+
+<span class="k">def</span> <span class="nf">fast_hk</span><span class="p">(</span><span class="n">dgm0</span><span class="p">,</span><span class="n">dgm1</span><span class="p">,</span><span class="n">sigma</span><span class="o">=.</span><span class="mi">4</span><span class="p">):</span>
+
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="kn">import</span> <span class="n">DistanceMetric</span>
+
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">DistanceMetric</span><span class="o">.</span><span class="n">get_metric</span><span class="p">(</span><span class="s1">&#39;euclidean&#39;</span><span class="p">)</span>
+    <span class="n">dist1</span> <span class="o">=</span> <span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">pairwise</span><span class="p">(</span><span class="n">dgm0</span><span class="p">,</span><span class="n">dgm1</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">Qc</span> <span class="o">=</span> <span class="n">dgm1</span><span class="p">[:,</span><span class="mi">1</span><span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">dist2</span> <span class="o">=</span> <span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">pairwise</span><span class="p">(</span><span class="n">dgm0</span><span class="p">,</span><span class="n">Qc</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">exp_dist1</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dist1</span><span class="o">/</span><span class="p">(</span><span class="mi">8</span><span class="o">*</span><span class="n">sigma</span><span class="p">))))</span>
+    <span class="n">exp_dist2</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dist2</span><span class="o">/</span><span class="p">(</span><span class="mi">8</span><span class="o">*</span><span class="n">sigma</span><span class="p">))))</span>
+    <span class="n">hk</span> <span class="o">=</span> <span class="p">(</span><span class="n">exp_dist1</span><span class="o">-</span><span class="n">exp_dist2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">8</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">sigma</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">hk</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">heat_kernel_approx</span><span class="p">(</span><span class="n">dgm0</span><span class="p">,</span> <span class="n">dgm1</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=.</span><span class="mi">4</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">fast_hk</span><span class="p">(</span><span class="n">dgm0</span><span class="p">,</span> <span class="n">dgm0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="n">fast_hk</span><span class="p">(</span><span class="n">dgm1</span><span class="p">,</span> <span class="n">dgm1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">fast_hk</span><span class="p">(</span><span class="n">dgm0</span><span class="p">,</span> <span class="n">dgm1</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">fast_kernel_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">time</span>
+
+    <span class="n">n_train</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
+    <span class="n">n_test</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+    <span class="n">X_train_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_train</span><span class="p">,</span> <span class="n">n_train</span><span class="p">))</span>
+    <span class="n">X_test_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_test</span><span class="p">,</span> <span class="n">n_train</span><span class="p">))</span>
+    
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n_train</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iteration: &quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Total Time: &quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iterations left: &quot;</span> <span class="p">,</span> <span class="n">n_train</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+            <span class="n">dgm0</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">dgm1</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">hka</span> <span class="o">=</span> <span class="n">heat_kernel_approx</span><span class="p">(</span><span class="n">dgm0</span><span class="p">,</span> <span class="n">dgm1</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">s</span><span class="p">)</span> 
+            <span class="n">X_train_features</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">hka</span>
+            <span class="n">X_train_features</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">hka</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n_test</span><span class="p">):</span>
+            <span class="n">dgm0</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">dgm1</span> <span class="o">=</span> <span class="n">test</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">hka</span> <span class="o">=</span> <span class="n">heat_kernel_approx</span><span class="p">(</span><span class="n">dgm0</span><span class="p">,</span> <span class="n">dgm1</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">s</span><span class="p">)</span>        
+            <span class="n">X_test_features</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">hka</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Total Time (Kernel): &quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X_train_features</span><span class="p">,</span> <span class="n">X_test_features</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">kernel_features</span><span class="p">()</span>
+    <span class="n">tent_features</span><span class="p">()</span>
+    <span class="n">adaptive_features</span><span class="p">()</span>
+    <span class="n">carlsson_coordinates</span><span class="p">()</span>
+    <span class="n">landscape_features</span><span class="p">()</span>
+    <span class="n">persistence_image_features</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Danielle Barnes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
