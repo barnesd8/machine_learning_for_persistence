@@ -67,8 +67,59 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="features">
-<h1><span class="section-number">3. </span>Features<a class="headerlink" href="#features" title="Permalink to this heading"></a></h1>
+  <section id="module-ml4pers.features.kernel_features">
+<span id="features"></span><h1><span class="section-number">3. </span>Features<a class="headerlink" href="#module-ml4pers.features.kernel_features" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="ml4pers.features.kernel_features.kernel_features">
+<span class="sig-prename descclassname"><span class="pre">ml4pers.features.kernel_features.</span></span><span class="sig-name descname"><span class="pre">kernel_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml4pers/features/kernel_features.html#kernel_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml4pers.features.kernel_features.kernel_features" title="Permalink to this definition"></a></dt>
+<dd><p>This function computes a training and testing set of features based on the multi-scale kernel method when given a training and testing set of persistence diagrams</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train</strong> (<em>array</em>) – training set</p></li>
+<li><p><strong>test</strong> (<em>array</em>) – testing set</p></li>
+<li><p><strong>s</strong> (<em>double</em>) – parameter for kernel, default is .3.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>X_train_features, features from the training set
+(array): X_test_features, features from the testing set</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-ml4pers.features.tent_features"></span><dl class="py function">
+<dt class="sig sig-object py" id="ml4pers.features.tent_features.tent_features">
+<span class="sig-prename descclassname"><span class="pre">ml4pers.features.tent_features.</span></span><span class="sig-name descname"><span class="pre">tent_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ml4pers/features/tent_features.html#tent_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ml4pers.features.tent_features.tent_features" title="Permalink to this definition"></a></dt>
+<dd><p>This function computes a training and testing set of features based on tent functions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train</strong> (<em>array</em>) – training set</p></li>
+<li><p><strong>test</strong> (<em>array</em>) – testing set</p></li>
+<li><p><strong>d</strong> (<em>double</em>) – parameter, default is 5.</p></li>
+<li><p><strong>padding</strong> (<em>double</em>) – parameter, default is .05.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>X_train_features, features from the training set
+(array): X_test_features, features from the testing set</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Below is an example of creating features from persistence diagrams using the kernel method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ml4pers.features</span> <span class="kn">import</span> <span class="n">kernel_features</span>
+
+<span class="n">X_train_features</span><span class="p">,</span> <span class="n">X_test_features</span> <span class="o">=</span> <span class="n">kernel_features</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 
 

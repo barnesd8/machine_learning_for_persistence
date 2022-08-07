@@ -1,17 +1,22 @@
-from persim import heat
-import numpy as np
-import ATS
-import time
-from sklearn import mixture
-import multidim
-from multidim.covertree import CoverTree
-from multidim.models import CDER
-import hdbscan
-from gudhi.representations.vector_methods import Landscape
-from persim import PersImage
-from sklearn.neighbors import DistanceMetric
+def kernel_features(train, test, s = .3):
 
-def kernel_features(train, test, s):
+    from persim import heat
+    import numpy as np
+    import time
+
+    """This function computes a training and testing set of features based on the multi-scale kernel method when given a training and testing set of persistence diagrams
+    
+    Args:
+       train (array):  training set
+       test (array):  testing set
+       s (double):  parameter for kernel, default is .3.
+
+    Returns:
+       (array): X_train_features, features from the training set
+       (array): X_test_features, features from the testing set
+
+    """
+    
     n_train = len(train)
     n_test = len(test)
     X_train_features = np.zeros((n_train, n_train))
@@ -37,6 +42,24 @@ def kernel_features(train, test, s):
     return X_train_features, X_test_features
 
 def tent_features(X_train, X_test, d=5, padding=.05):
+    """This function computes a training and testing set of features based on tent functions
+    
+    Args:
+       train (array):  training set
+       test (array):  testing set
+       d (double):  parameter, default is 5.
+       padding (double): parameter, default is .05.
+
+    Returns:
+       (array): X_train_features, features from the training set
+       (array): X_test_features, features from the testing set
+
+    """
+
+    import numpy as np
+    import ATS
+    import time
+
     centers, delta = ATS.box_centers(X_train, d, padding) 
 
     start = time.time()
@@ -50,6 +73,16 @@ def tent_features(X_train, X_test, d=5, padding=.05):
     return X_train_features, X_test_features
 
 def adaptive_features(X_train, X_test, model, y_train, d=25):
+
+    import numpy as np
+    import ATS
+    import time
+    from sklearn import mixture
+    import multidim
+    from multidim.covertree import CoverTree
+    from multidim.models import CDER
+    import hdbscan
+
     if model == "gmm":
         print('Begin GMM...')
         start = time.time()
@@ -142,6 +175,10 @@ def adaptive_features(X_train, X_test, model, y_train, d=25):
     return X_train_features, X_test_features
 
 def carlsson_coordinates(X_train, X_test):
+
+    import numpy as np
+    import time
+
     n = len(X_train)
     X_train_features_cc1 = np.zeros(n)
     X_train_features_cc2 = np.zeros(n)
@@ -205,7 +242,10 @@ def carlsson_coordinates(X_train, X_test):
     return X_train_features_cc1, X_train_features_cc2, X_train_features_cc3, X_train_features_cc4, X_test_features_cc1, X_test_features_cc2, X_test_features_cc3, X_test_features_cc4
 
 def landscape_features(X_train, X_test, num_landscapes=5, resolution=100):
-    start = time.time()
+
+    import time
+    from gudhi.representations.vector_methods import Landscape
+    
     landscapes = Landscape(num_landscapes, resolution)
     lr = landscapes.fit(X_train)
     X_train_features = lr.transform(X_train)
@@ -214,6 +254,11 @@ def landscape_features(X_train, X_test, num_landscapes=5, resolution=100):
     return X_train_features, X_test_features
 
 def persistence_image_features(X_train, X_test, pixels=[20,20], spread=1):
+
+    import numpy as np
+    import time
+    from persim import PersImage
+
     start = time.time()
     pim = PersImage(pixels=pixels, spread=spread)
     imgs_train = pim.transform(X_train)
@@ -225,6 +270,10 @@ def persistence_image_features(X_train, X_test, pixels=[20,20], spread=1):
     return X_train_features, X_test_features
 
 def fast_hk(dgm0,dgm1,sigma=.4):
+
+    import numpy as np
+    from sklearn.neighbors import DistanceMetric
+
     dist = DistanceMetric.get_metric('euclidean')
     dist1 = (dist.pairwise(dgm0,dgm1))**2
     Qc = dgm1[:,1::-1]
@@ -238,6 +287,10 @@ def heat_kernel_approx(dgm0, dgm1, sigma=.4):
     return np.sqrt(fast_hk(dgm0, dgm0, sigma) + fast_hk(dgm1, dgm1, sigma) - 2*fast_hk(dgm0, dgm1, sigma))
 
 def fast_kernel_features(train, test, s):
+
+    import numpy as np
+    import time
+
     n_train = len(train)
     n_test = len(test)
     X_train_features = np.zeros((n_train, n_train))
@@ -264,4 +317,9 @@ def fast_kernel_features(train, test, s):
     print("Total Time (Kernel): ", time.time()-start)
     return X_train_features, X_test_features
 
-    
+# _______________________________________EXAMPLE_________________________________________
+if __name__ == "__main__":
+
+    from ml4pers.features.persistence_methods import kernel_features
+
+    X_train_features, X_test_features = kernel_features(X_train, X_test)
